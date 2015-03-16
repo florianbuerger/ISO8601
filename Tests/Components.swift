@@ -64,6 +64,8 @@ struct Components {
 		
 		if let timeZoneOffset = timeZoneOffset {
 			self.timeZone = NSTimeZone(forSecondsFromGMT: Int(timeZoneOffset * 3600))
+		} else {
+			self.timeZone = nil
 		}
 	}
 }
