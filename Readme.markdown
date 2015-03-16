@@ -5,10 +5,19 @@ Fast [ISO8601](http://en.wikipedia.org/wiki/ISO8601) date parser and writer for 
 
 ## Installation
 
+[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
+
+
 Simply install with [CocoaPods](https://cocoapods.org):
 
 ``` ruby
 pod 'ISO8601'
+```
+
+or [Carthage](https://github.com/Carthage/Carthage):
+
+```
+github 'florianbuerger/ISO8601' 
 ```
 
 For manual installation, I recommend adding the project as a subproject to your project or workspace and adding the framework as a target dependency.
