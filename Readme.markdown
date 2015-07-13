@@ -1,11 +1,19 @@
 # ISO8601
 
+[![Version](https://img.shields.io/github/release/soffes/ISO8601.svg)](https://github.com/soffes/ISO8601/releases) [![Build Status](https://travis-ci.org/soffes/ISO8601.svg?branch=master)](https://travis-ci.org/soffes/ISO8601) [![Coverage Status](https://coveralls.io/repos/soffes/ISO8601/badge.svg?branch=master)](https://coveralls.io/r/soffes/ISO8601?branch=master) [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage) [![CocoaPods compatible](https://img.shields.io/cocoapods/v/ISO8601.svg)](https://cocoapods.org/pods/ISO8601)
+
 Fast [ISO8601](http://en.wikipedia.org/wiki/ISO8601) date parser and writer for iOS & Mac.
 
 
 ## Installation
 
-Simply install with [CocoaPods](https://cocoapods.org):
+[Carthage](https://github.com/carthage/carthage) is the recommended way to install ISO8601. Add the following to your Cartfile:
+
+``` ruby
+github "soffes/ISO8601"
+```
+
+You can also install with [CocoaPods](https://cocoapods.org):
 
 ``` ruby
 pod 'ISO8601'
@@ -19,7 +27,7 @@ For manual installation, I recommend adding the project as a subproject to your 
 First, import the appropriate header:
 
 ``` objc
-#import <ISO8601/ISO8601.h>
+@import ISO8601; // Use #import <ISO8601/ISO8601.h> if you're using CocoaPods
 ```
 
 This library uses `NSDateComponents` for reading and writing. Here's an example:
@@ -58,7 +66,7 @@ NSString *ISO8601String = [date ISO8601StringWithTimeZone:timeZoneOrNil usingCal
 
 `NSDateComponents` is the core data structure because `NSDate` doesn't perserve time zone information well.
 
-It's worth noting that a value in the `NSDateComponents` will be `nil` if it is not in the input string. For example, `1999-05-19T23:55:21Z` will have a `nil` time zone, but `1999-05-19T23:55:21+00:00` will have a UTC time zone.
+It's worth noting that a value in the `NSDateComponents` will be `nil` if it is not in the input string. For example, `1999-05-19T23:55:21` will have a `nil` time zone, but `1999-05-19T23:55:21+00:00` and `1999-05-19T23:55:21Z` will have a UTC time zone.
 
 The `+[NSDate dateWithISO8601String:]` category will always return a UTC date. If you want a date in another time zone, you should use `+[NSDate ISO8601StringWithTimeZone:usingCalendar:]` (you may pass `nil` for the calendar parameter to use the current calendar).
 

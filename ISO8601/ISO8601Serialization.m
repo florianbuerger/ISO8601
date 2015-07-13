@@ -67,28 +67,30 @@
 		return dateComponents;
 	}
 	dateComponents.minute = minute;
-	
+
 	// Second
-	if (![scanner scanString:@":" intoString:nil]) {
-		return dateComponents;
-	}
-	
-	NSInteger second;
-	if (![scanner scanInteger:&second]) {
-		return dateComponents;
-	}
-	dateComponents.second = second;
-	
-	// Time zone
 	NSUInteger scannerLocation = scanner.scanLocation;
-	
-	// UTC
+	if ([scanner scanString:@":" intoString:nil]) {
+		NSInteger second;
+		if (![scanner scanInteger:&second]) {
+			return dateComponents;
+		}
+		dateComponents.second = second;
+	} else {
+		scanner.scanLocation = scannerLocation;
+	}
+
+	// Zulu
+	scannerLocation = scanner.scanLocation;
 	[scanner scanUpToString:@"Z" intoString:nil];
 	if ([scanner scanString:@"Z" intoString:nil]) {
+		// Z stands for the Zulu (Z in the NATO phonetic alphabet) time zone. UTC and the Zulu time
+		// zone are synonymous.
+		dateComponents.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
 		return dateComponents;
 	}
 	
-	// Move back to end of seconds
+	// Move back to end of time
 	scanner.scanLocation = scannerLocation;
 	
 	// Look for offset
@@ -101,7 +103,8 @@
 	
 	// Offset hour
 	NSInteger timeZoneOffset = 0;
-	NSInteger timeZoneOffsetHour;
+	NSInteger timeZoneOffsetHour = 0;
+	NSInteger timeZoneOffsetMinute = 0;
 	if (![scanner scanInteger:&timeZoneOffsetHour]) {
 		return dateComponents;
 	}
@@ -109,25 +112,16 @@
 	// Check for colon
 	BOOL colonExists = [scanner scanString:@":" intoString:nil];
 	if (!colonExists && timeZoneOffsetHour > 14) {
-		timeZoneOffsetHour /= 100;
+		timeZoneOffsetMinute = timeZoneOffsetHour % 100;
+		timeZoneOffsetHour = floor(timeZoneOffsetHour / 100);
+	} else {
+		// Offset minute
+		[scanner scanInteger:&timeZoneOffsetMinute];
 	}
-	
-	timeZoneOffset = timeZoneOffsetHour * 3600 * ([sign isEqualToString:@"-"] ? -1 : 1);
-	dateComponents.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:timeZoneOffset];
-	
-	if (!colonExists) {
-		return dateComponents;
-	}
-	
-	// Offset minute
-	NSInteger timeZoneOffsetMinute;
-	if (![scanner scanInteger:&timeZoneOffsetMinute]) {
-		return dateComponents;
-	}
-	
-	timeZoneOffset += timeZoneOffsetMinute * 60 * ([sign isEqualToString:@"-"] ? -1 : 1);
-	dateComponents.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:timeZoneOffset];
-	
+
+	timeZoneOffset = (timeZoneOffsetHour * 60 * 60) + (timeZoneOffsetMinute * 60);
+	dateComponents.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:timeZoneOffset * ([sign isEqualToString:@"-"] ? -1 : 1)];
+
 	return dateComponents;
 }
 
@@ -136,8 +130,12 @@
 	NSString *string = [[NSString alloc] initWithFormat:@"%04li-%02i-%02iT%02i:%02i:%02i", (long)components.year,
 						(int)components.month, (int)components.day, (int)components.hour, (int)components.minute,
 						(int)components.second];
-	
+
 	NSTimeZone *timeZone = components.timeZone;
+	if (!timeZone) {
+		return string;
+	}
+	
 	if (timeZone.secondsFromGMT != 0) {
 		NSInteger hoursOffset = timeZone.secondsFromGMT / 3600;
 		
